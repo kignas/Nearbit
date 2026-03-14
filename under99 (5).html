@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>₹99 Store – Nearbite</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { background: #f4f4f6; padding-bottom: 140px; }
+
+    /* ── STICKY HEADER ── */
+    .store-header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(255,255,255,0.96);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+
+    .header-top {
+      padding: 14px 16px 12px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .icon-btn {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: #f3f3f5; border: none;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: background 0.15s, transform 0.12s;
+      text-decoration: none;
+    }
+    .icon-btn:active { transform: scale(0.92); background: #eaeaed; }
+    .icon-btn i { font-size: 13px; color: #333; }
+    .header-title-wrap {}
+    .header-title-row { display: flex; align-items: center; gap: 7px; }
+    .header-title { font-size: 18px; font-weight: 900; color: #111; }
+    .official-badge {
+      background: #FC8019; color: #fff;
+      font-size: 7px; font-weight: 900;
+      padding: 2px 6px; border-radius: 5px;
+      letter-spacing: 0.8px; text-transform: uppercase;
+    }
+    .header-sub { font-size: 10px; font-weight: 700; color: #bbb; margin-top: 2px; letter-spacing: 0.3px; }
+    .header-actions { display: flex; gap: 10px; }
+
+    /* Filter pills row */
+    .filter-row {
+      padding: 0 16px 12px;
+      display: flex; gap: 8px; overflow-x: auto;
+    }
+    .filter-row::-webkit-scrollbar { display: none; }
+    .filter-sep { width: 1px; background: #eee; align-self: center; height: 20px; flex-shrink: 0; margin: 0 2px; }
+
+    /* Veg + countdown sub-bar */
+    .sub-bar {
+      padding: 10px 16px;
+      background: #fafafa;
+      border-top: 1px solid rgba(0,0,0,0.05);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .veg-toggle-row { display: flex; align-items: center; gap: 8px; }
+    .veg-label { font-size: 10px; font-weight: 800; color: #888; letter-spacing: 0.5px; text-transform: uppercase; }
+    .veg-switch {
+      width: 34px; height: 18px;
+      background: #ddd; border-radius: 999px;
+      position: relative; cursor: pointer;
+      transition: background 0.25s;
+    }
+    .veg-switch.on { background: #16a34a; }
+    .veg-thumb {
+      position: absolute; top: 2px; left: 2px;
+      width: 14px; height: 14px;
+      background: #fff; border-radius: 50%;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+      transition: transform 0.25s;
+    }
+    .veg-switch.on .veg-thumb { transform: translateX(16px); }
+
+    .countdown-wrap { display: flex; align-items: center; gap: 6px; }
+    .countdown-dot { width: 6px; height: 6px; background: #ef4444; border-radius: 50%; animation: pulse 1.2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.85)} }
+    .countdown-text { font-size: 10px; font-weight: 800; color: #ef4444; letter-spacing: 0.5px; font-family: 'Poppins', sans-serif; }
+
+    /* ── MAIN CONTENT ── */
+    main { padding: 16px 14px 0; }
+    .items-found-label { font-size: 11px; font-weight: 800; color: #bbb; letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 16px; }
+
+    /* ── PRODUCT GRID ── */
+    .product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 12px; }
+
+    /* ── PRODUCT CARD ── */
+    .product-card {
+      background: #fff;
+      border-radius: 20px;
+      overflow: visible;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.04);
+      border: 1px solid rgba(0,0,0,0.05);
+      padding-bottom: 14px;
+    }
+
+    /* Image section */
+    .card-img-wrap {
+      position: relative;
+      margin: 0;
+      border-radius: 19px 19px 0 0;
+      overflow: hidden;
+      background: #f8f8f8;
+      aspect-ratio: 1;
+    }
+    .card-img-wrap img {
+      width: 100%; height: 100%;
+      object-fit: cover; display: block;
+    }
+
+    /* Price badge on image */
+    .price-badge {
+      position: absolute; bottom: 10px; right: 10px;
+      background: yellowgreen;
+      color: black;
+      font-size: 12px; font-weight: 900;
+      padding: 4px 9px; border-radius: 9px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+      letter-spacing: 0.2px;
+    }
+
+    /* Floating ADD/stepper on card */
+    .card-btn-float {
+      position: relative;
+      display: flex; justify-content: center;
+      margin-top: -14px;
+      margin-bottom: 10px;
+      z-index: 5;
+    }
+    .card-add-wrap {
+      min-width: 88px; height: 34px;
+      background: #fff;
+      border: 1.5px solid #efefef;
+      border-radius: 11px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.06);
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+    .card-add-single {
+      width: 100%; height: 100%; background: transparent; border: none;
+      font-family: 'Poppins', sans-serif; font-size: 12px; font-weight: 800;
+      color: #FC8019; letter-spacing: 0.6px; cursor: pointer;
+      transition: background 0.12s;
+    }
+    .card-add-single:active { background: #fff8f2; }
+    .card-stepper { width: 100%; height: 100%; display: flex; align-items: center; justify-content: space-between; }
+    .card-s-btn {
+      width: 32px; height: 100%; background: transparent; border: none;
+      font-size: 17px; font-weight: 700; color: #FC8019; cursor: pointer;
+      font-family: 'Poppins', sans-serif;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.12s;
+    }
+    .card-s-btn:active { background: #fff8f2; }
+    .card-s-count { font-size: 13px; font-weight: 900; color: #111; min-width: 18px; text-align: center; pointer-events: none; }
+
+    /* Card body */
+    .card-body { padding: 0 12px; }
+    .card-meta-row { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; }
+    .card-rating {
+      display: inline-flex; align-items: center; gap: 3px;
+      background: #f0faf5; border: 1px solid #c6ead8;
+      border-radius: 6px; padding: 2px 6px;
+    }
+    .card-rating i { font-size: 8px; color: #1ba672; }
+    .card-rating span { font-size: 10px; font-weight: 800; color: #1ba672; }
+    .card-name { font-size: 13px; font-weight: 800; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
+    .card-rest { font-size: 10px; font-weight: 600; color: #bbb; text-transform: uppercase; letter-spacing: 0.4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Skeleton grid */
+    .skel-card { background: #fff; border-radius: 20px; overflow: hidden; border: 1px solid rgba(0,0,0,0.05); }
+    .skel-img { aspect-ratio: 1; }
+    .skel-body { padding: 12px; display: flex; flex-direction: column; gap: 7px; }
+
+    /* Empty state */
+    .empty-state { grid-column: 1/-1; text-align: center; padding: 60px 20px; }
+    .empty-state i { font-size: 44px; color: #e0e0e0; margin-bottom: 14px; display: block; }
+    .empty-state h3 { font-size: 16px; font-weight: 800; color: #555; }
+    .empty-state p  { font-size: 12px; color: #bbb; margin-top: 6px; font-weight: 500; }
+  </style>
+</head>
+<body>
+
+<!-- ── Sticky Header ── -->
+<header class="store-header">
+  <div class="header-top">
+    <div class="header-left">
+      <a href="index.html" class="icon-btn"><i class="fa-solid fa-arrow-left"></i></a>
+      <div class="header-title-wrap">
+        <div class="header-title-row">
+          <h1 class="header-title">₹99 Store</h1>
+          <span class="official-badge">OFFICIAL</span>
+        </div>
+        <p class="header-sub">Quality Guaranteed · Free Delivery</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" onclick="window.location.href='search.html'"><i class="fa-solid fa-magnifying-glass"></i></button>
+      <button class="icon-btn"><i class="fa-solid fa-share-nodes"></i></button>
+    </div>
+  </div>
+
+  <!-- Filter pills -->
+  <div class="filter-row no-scrollbar">
+    <button onclick="setPriceFilter(99)"  id="filter-99"  class="filter-pill active">₹99 Store</button>
+    <button onclick="setPriceFilter(149)" id="filter-149" class="filter-pill">₹149 Store</button>
+    <div class="filter-sep"></div>
+    <button onclick="setSortFilter()" id="sort-btn" class="filter-pill">
+      Sort <i class="fa-solid fa-chevron-down" style="font-size:8px;margin-left:3px"></i>
+    </button>
+    <button onclick="setRatingFilter()" id="rating-btn" class="filter-pill">⭐ 4.0+</button>
+  </div>
+
+  <!-- Veg toggle + countdown -->
+  <div class="sub-bar">
+    <div class="veg-toggle-row">
+      <span class="veg-label">Veg Only</span>
+      <div class="veg-switch" id="veg99-switch" onclick="toggleVeg()">
+        <div class="veg-thumb" id="veg99-thumb"></div>
+      </div>
+    </div>
+    <div class="countdown-wrap">
+      <div class="countdown-dot"></div>
+      <span id="countdown-timer" class="countdown-text">ENDS IN 3:00:00</span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <p id="item-count" class="items-found-label">– ITEMS FOUND</p>
+
+  <!-- Skeleton -->
+  <div id="skeleton-grid" class="product-grid">
+    <div class="skel-card"><div class="skel-img skeleton"></div><div class="skel-body"><div class="skeleton" style="height:13px;width:70%;border-radius:6px"></div><div class="skeleton" style="height:11px;width:50%;border-radius:6px"></div></div></div>
+    <div class="skel-card"><div class="skel-img skeleton"></div><div class="skel-body"><div class="skeleton" style="height:13px;width:65%;border-radius:6px"></div><div class="skeleton" style="height:11px;width:45%;border-radius:6px"></div></div></div>
+    <div class="skel-card"><div class="skel-img skeleton"></div><div class="skel-body"><div class="skeleton" style="height:13px;width:75%;border-radius:6px"></div><div class="skeleton" style="height:11px;width:55%;border-radius:6px"></div></div></div>
+    <div class="skel-card"><div class="skel-img skeleton"></div><div class="skel-body"><div class="skeleton" style="height:13px;width:60%;border-radius:6px"></div><div class="skeleton" style="height:11px;width:40%;border-radius:6px"></div></div></div>
+  </div>
+
+  <div id="under99-list" class="product-grid" style="display:none"></div>
+</main>
+
+<!-- Premium Cart Bar -->
+<div id="cart-bar">
+  <div class="cart-inner-left">
+    <div class="cart-bag-wrap"><i class="fa-solid fa-bag-shopping"></i></div>
+    <div class="cart-text-wrap">
+      <p id="cart-summary" class="cart-summary-text">0 ITEMS | ₹0</p>
+      <p class="cart-sub-text"><i class="fa-solid fa-bolt-lightning"></i> Fast Delivery</p>
+    </div>
+  </div>
+  <button class="cart-cta-btn" onclick="window.location.href='cart.html'">
+    VIEW CART <i class="fa-solid fa-chevron-right"></i>
+  </button>
+</div>
+
+<!-- ══════════════════════════════════════════
+     BOTTOM NAVIGATION
+══════════════════════════════════════════ -->
+<nav class="bottom-nav">
+
+<nav class="bottom-nav">
+  <a href="index.html" class="nav-item" style="color:#FC8019">
+    <div class="nav-food-circle">
+      <svg fill="currentColor" viewBox="0 0 24 24"><path d="M18.06 22.99h1.66c.84 0 1.53-.64 1.63-1.46L23 5.05h-5V1h-1.97v4.05h-4.97l.3 2.34c1.71.47 3.31 1.32 4.27 2.26 1.44 1.42 2.43 2.89 2.43 5.29v8.05zM1 21.99V21h15.03v.99c0 .55-.45 1-1.01 1H2.01c-.56 0-1.01-.45-1.01-1zm15.03-7c0-5.87-11.31-7.95-15.03-3.89V21h15.03v-6.01z"/></svg>
+    </div>
+    <span style="color:#FC8019">Food</span>
+  </a>
+  <a href="under99.html" class="nav-item" style="color:#94a3b8">
+    <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+    <spanstyle="color:#FC8019">99 store</span>
+  </a>
+  <a href="orders.html" class="nav-item" style="color:#94a3b8">
+    <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+    <span>Orders</span>
+    <span class="nav-new-badge">NEW</span>
+  </a>
+</nav>
+
+<script src="home.js"></script>
+<script src="under99.js"></script>
+<script>
+// Override renderItems to use premium card structure
+const _origRenderItems = window.renderItems;
+window.renderItems = function() {
+  const listEl   = document.getElementById('under99-list');
+  const skeleton = document.getElementById('skeleton-grid');
+  if (!listEl) return;
+
+  let items = [];
+  restaurants.forEach(res => {
+    res.menu.forEach(item => {
+      const inRange = currentMaxPrice === 99
+        ? item.price <= 99
+        : item.price > 99 && item.price <= 149;
+      const dietOk   = !vegOnly99   || item.isVeg;
+      const ratingOk = !ratingFilter || parseFloat(res.rating) >= 4.0;
+      if (inRange && dietOk && ratingOk) {
+        items.push({ ...item, resId: res.id, resName: res.name, resRating: res.rating });
+      }
+    });
+  });
+
+  if (sortByRating) items.sort((a,b) => parseFloat(b.resRating) - parseFloat(a.resRating));
+
+  const countEl = document.getElementById('item-count');
+  if (countEl) countEl.innerText = items.length + ' ITEMS FOUND';
+  if (skeleton) skeleton.style.display = 'none';
+  listEl.style.display = 'grid';
+
+  if (items.length === 0) {
+    listEl.innerHTML = `
+      <div class="empty-state">
+        <i class="fa-solid fa-bowl-food"></i>
+        <h3>No items found</h3>
+        <p>Try changing the filters above</p>
+      </div>`;
+    return;
+  }
+
+  listEl.innerHTML = items.map((item, idx) => {
+    const key = item.name.replace(/\s+/g,'');
+    const qty = cart[item.name] ? cart[item.name].quantity : 0;
+
+    const btnHTML = qty > 0
+      ? `<div class="card-stepper">
+           <button class="card-s-btn" onclick="updateCart('${item.name}',-1,${item.price},${item.resId})">−</button>
+           <span class="card-s-count">${qty}</span>
+           <button class="card-s-btn" onclick="updateCart('${item.name}',1,${item.price},${item.resId})">+</button>
+         </div>`
+      : `<button class="card-add-single" onclick="updateCart('${item.name}',1,${item.price},${item.resId})">ADD</button>`;
+
+    return `
+      <div class="product-card food-card-animate" style="animation-delay:${idx*0.04}s">
+        <div class="card-img-wrap">
+          <img src="${item.img}" alt="${item.name}"
+               onerror="this.src='https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=200&auto=format&fit=crop&q=80'">
+          <div class="price-badge">₹${item.price}</div>
+        </div>
+        <div class="card-btn-float">
+          <div id="btn-container-${key}" class="card-add-wrap">${btnHTML}</div>
+        </div>
+        <div class="card-body">
+          <div class="card-meta-row">
+            <div class="veg-dot ${item.isVeg?'veg':'nonveg'}"><div class="dot"></div></div>
+            <div class="card-rating">
+              <i class="fa-solid fa-star"></i>
+              <span>${item.resRating}</span>
+            </div>
+          </div>
+          <p class="card-name">${item.name}</p>
+          <p class="card-rest">${item.resName}</p>
+        </div>
+      </div>`;
+  }).join('');
+
+  renderCartBar();
+};
+
+// Override updateCart for under99 card structure
+window.updateCart = function(itemName, change, price, rId) {
+  if (!cart[itemName]) cart[itemName] = { quantity: 0, price, resId: rId };
+  cart[itemName].quantity += change;
+  if (cart[itemName].quantity <= 0) delete cart[itemName];
+
+  const key = itemName.replace(/\s+/g,'');
+  const container = document.getElementById('btn-container-' + key);
+  if (container) {
+    const qty = cart[itemName] ? cart[itemName].quantity : 0;
+    if (qty > 0) {
+      container.innerHTML = `
+        <div class="card-stepper">
+          <button class="card-s-btn" onclick="updateCart('${itemName}',-1,${price},${rId})">−</button>
+          <span class="card-s-count">${qty}</span>
+          <button class="card-s-btn" onclick="updateCart('${itemName}',1,${price},${rId})">+</button>
+        </div>`;
+    } else {
+      container.innerHTML =
+        `<button class="card-add-single" onclick="updateCart('${itemName}',1,${price},${rId})">ADD</button>`;
+    }
+  }
+
+  localStorage.setItem('nearbite_cart', JSON.stringify(cart));
+  renderCartBar();
+};
+
+// Veg toggle uses new switch
+window.toggleVeg = function() {
+  vegOnly99 = !vegOnly99;
+  const sw = document.getElementById('veg99-switch');
+  if (sw) sw.classList.toggle('on', vegOnly99);
+  renderItems();
+};
+</script>
+</body>
+</html>
