@@ -30,9 +30,11 @@
     .btn { width: 100%; background: #38bdf8; color: #0f172a; padding: 16px; border: none; border-radius: 10px; font-size: 15px; font-weight: 900; margin-top: 12px; font-family: inherit; cursor: pointer; transition: 0.2s; }
     .btn:active { transform: scale(0.98); }
 
-    #imagePreview { width: 100%; height: 160px; border-radius: 10px; background: #0f172a; border: 1px dashed #334155; margin-bottom: 20px; object-fit: cover; display: none; }
+    .btn-green { background: #10b981; color: #fff; }
 
-    /* 🚨 LIVE MENU VIEWER STYLES 🚨 */
+    #imagePreview, #resImagePreview { width: 100%; height: 160px; border-radius: 10px; background: #0f172a; border: 1px dashed #334155; margin-bottom: 20px; object-fit: cover; display: none; }
+
+    /* LIVE MENU VIEWER STYLES */
     .menu-list { display: flex; flex-direction: column; gap: 12px; }
     .menu-row { display: flex; align-items: center; justify-content: space-between; background: #0f172a; padding: 12px; border-radius: 12px; border: 1px solid #334155; }
     .menu-row img { width: 48px; height: 48px; border-radius: 8px; object-fit: cover; border: 1px solid #1e293b; }
@@ -59,8 +61,30 @@
     <p>Master Catalog Injection & Control System</p>
   </div>
 
+  <div class="card" style="border-color: #10b981;">
+    <div class="card-title" style="color:#10b981;"><i class="fa-solid fa-store"></i> Step 1: Create New Restaurant</div>
+    
+    <div class="input-group">
+      <label>Restaurant Name</label>
+      <input type="text" id="resName" class="input-field" placeholder="e.g. Biryani Zone">
+    </div>
+
+    <div class="input-group">
+      <label>Cuisine Type</label>
+      <input type="text" id="resCuisine" class="input-field" placeholder="e.g. Biryani, Mughlai">
+    </div>
+
+    <div class="input-group">
+      <label>High-Res Cover Image URL</label>
+      <input type="url" id="resImage" class="input-field" placeholder="Paste image link here" oninput="previewResImage()">
+    </div>
+    <img id="resImagePreview" src="" alt="Preview">
+
+    <button class="btn btn-green" id="btnCreateRes" onclick="createNewRestaurant()">Create Restaurant</button>
+  </div>
+
   <div class="card">
-    <div class="card-title"><i class="fa-solid fa-plus"></i> Inject New Item</div>
+    <div class="card-title"><i class="fa-solid fa-plus"></i> Step 2: Inject Food Item</div>
     <div class="input-group">
       <label>1. Assign to Restaurant</label>
       <select id="restaurantSelect" onchange="loadCurrentMenu()">
@@ -113,18 +137,8 @@
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
-        // 🚨 IF BACKEND BLOCKS YOU (403), SHOW THE CEO UPGRADE BUTTON
-        if (response.status === 403) {
-            document.getElementById('ceo-overlay').style.display = 'flex';
-            return;
-        }
-
-        // 🚨 MOBILE DEBUGGER: IF ROUTE IS MISSING OR SERVER CRASHED
-        if (!response.ok) {
-            alert("Backend Error " + response.status + ": Did you forget to upload adminRoutes.js to Render?");
-            document.getElementById('restaurantSelect').innerHTML = '<option value="">Error ' + response.status + '</option>';
-            return;
-        }
+        if (response.status === 403) { document.getElementById('ceo-overlay').style.display = 'flex'; return; }
+        if (!response.ok) { alert("Backend Error: Cannot load restaurants."); return; }
 
         const result = await response.json();
 
@@ -132,29 +146,58 @@
           document.getElementById('ceo-overlay').style.display = 'none';
           const select = document.getElementById('restaurantSelect');
           
-          // 🚨 IF THERE ARE 0 RESTAURANTS IN THE DATABASE
           if(result.data.length === 0) {
-             select.innerHTML = '<option value="">⚠️ No Restaurants in Database!</option>';
-             alert("The database is working, but there are no restaurants to assign food to!");
+             select.innerHTML = '<option value="">⚠️ No Restaurants Created Yet!</option>';
           } else {
              select.innerHTML = '<option value="">-- Select a Restaurant --</option>';
              result.data.forEach(res => { select.innerHTML += `<option value="${res._id}">${res.name}</option>`; });
           }
-        } else {
-          alert("Database Error: " + result.message);
         }
-      } catch (err) { alert("Network Error: Is Render sleeping? " + err.message); }
+      } catch (err) { alert("Network Error"); }
     }
 
-    // ── FETCH THE SELECTED RESTAURANT'S ITEMS ──
+    // 🚨 BRAND NEW: CREATE RESTAURANT LOGIC 🚨
+    async function createNewRestaurant() {
+      const name = document.getElementById('resName').value.trim();
+      const cuisine = document.getElementById('resCuisine').value.trim();
+      const image = document.getElementById('resImage').value.trim() || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80';
+      const token = localStorage.getItem('token') || localStorage.getItem('nearbite_token');
+      const btn = document.getElementById('btnCreateRes');
+
+      if (!name || !cuisine) { alert("Please enter Restaurant Name and Cuisine!"); return; }
+
+      btn.innerText = "Creating..."; btn.disabled = true;
+
+      try {
+        // You already have a public route to create restaurants in your backend!
+        const response = await fetch('https://eatswada.onrender.com/api/restaurants', {
+          method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          // We attach a dummy user ID as owner just to make the backend happy
+          body: JSON.stringify({ name, cuisineDisplay: cuisine, image, address: "Maynaguri", rating: 4.5, isActive: true })
+        });
+        
+        if (response.ok) {
+           alert("Restaurant Created Successfully! It is now live on your main website.");
+           document.getElementById('resName').value = ''; document.getElementById('resCuisine').value = '';
+           document.getElementById('resImage').value = ''; document.getElementById('resImagePreview').style.display = 'none';
+           loadRestaurants(); // Reload the dropdown!
+        } else { alert("Creation failed."); }
+      } catch (err) { alert("Network error."); }
+
+      btn.innerText = "Create Restaurant"; btn.disabled = false;
+    }
+
+    function previewResImage() {
+      const url = document.getElementById('resImage').value;
+      const img = document.getElementById('resImagePreview');
+      if (url.length > 10) { img.src = url; img.style.display = 'block'; } else { img.style.display = 'none'; }
+    }
+
     async function loadCurrentMenu() {
       const restaurantId = document.getElementById('restaurantSelect').value;
       const grid = document.getElementById('current-menu-grid');
 
-      if (!restaurantId) {
-         grid.innerHTML = '<p style="color:#94a3b8; font-size:13px; font-weight:600; text-align:center; padding: 20px 0;">Select a restaurant above to view and control their menu.</p>';
-         return;
-      }
+      if (!restaurantId) { grid.innerHTML = '<p style="color:#94a3b8; font-size:13px; font-weight:600; text-align:center; padding: 20px 0;">Select a restaurant above to view and control their menu.</p>'; return; }
 
       grid.innerHTML = '<p style="color:#38bdf8; font-size:13px; font-weight:800; text-align:center; padding: 20px 0;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching live data...</p>';
       const token = localStorage.getItem('token') || localStorage.getItem('nearbite_token');
@@ -164,9 +207,7 @@
         const result = await response.json();
 
         if (response.ok && result.success) {
-           if (result.data.length === 0) {
-              grid.innerHTML = '<p style="color:#94a3b8; font-size:13px; font-weight:600; text-align:center; padding: 20px 0;">This restaurant currently has 0 items.</p>'; return;
-           }
+           if (result.data.length === 0) { grid.innerHTML = '<p style="color:#94a3b8; font-size:13px; font-weight:600; text-align:center; padding: 20px 0;">This restaurant currently has 0 items.</p>'; return; }
 
            grid.innerHTML = '<div class="menu-list">' + result.data.map(item => `
              <div class="menu-row">
@@ -179,25 +220,15 @@
              </div>
            `).join('') + '</div>';
         }
-      } catch (e) {
-        grid.innerHTML = '<p style="color:#ef4444; font-size:13px; font-weight:800; text-align:center;">Failed to load database.</p>';
-      }
+      } catch (e) { grid.innerHTML = '<p style="color:#ef4444; font-size:13px; font-weight:800; text-align:center;">Failed to load database.</p>'; }
     }
 
-    // ── DELETE ITEM COMPLETELY ──
     async function deleteItem(itemId) {
       if(!confirm("⚠️ WARNING: Are you sure you want to permanently delete this item from the database?")) return;
-
       const token = localStorage.getItem('token') || localStorage.getItem('nearbite_token');
       try {
-         const response = await fetch(`https://eatswada.onrender.com/api/admin/menu/${itemId}`, {
-            method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` }
-         });
-
-         if(response.ok) {
-             alert("Item permanently deleted.");
-             loadCurrentMenu(); // Instantly refresh the list
-         }
+         const response = await fetch(`https://eatswada.onrender.com/api/admin/menu/${itemId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+         if(response.ok) { alert("Item permanently deleted."); loadCurrentMenu(); }
       } catch(e) { alert("Network Error: Could not delete."); }
     }
 
