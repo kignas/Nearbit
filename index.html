@@ -3,392 +3,829 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>CEO Command Center – EatSwada</title>
+  <title>CEO Dashboard – EatSwada</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
+
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Plus Jakarta Sans', sans-serif; background: #0f172a; color: #f8fafc; padding: 24px; padding-bottom: 80px; -webkit-tap-highlight-color: transparent; }
-    
-    .header { margin-bottom: 24px; border-bottom: 1px solid #1e293b; padding-bottom: 16px; }
-    .header h1 { font-size: 24px; font-weight: 900; color: #38bdf8; letter-spacing: -0.5px; }
-    .header p { font-size: 13px; color: #94a3b8; margin-top: 4px; font-weight: 600; }
-
-    /* Production Dashboard Stats */
-    .dashboard-stats { display: flex; gap: 16px; margin-bottom: 24px; }
-    .stat-box { flex: 1; background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 16px; text-align: center; }
-    .stat-value { font-size: 24px; font-weight: 900; color: #f8fafc; margin-bottom: 4px; }
-    .stat-label { font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
-    .stat-blue { color: #38bdf8; }
-    .stat-green { color: #10b981; }
-
-    .card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 24px; }
-    .card-title { font-size: 16px; font-weight: 900; color: #38bdf8; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; justify-content: space-between; }
-    
-    .input-group { margin-bottom: 20px; }
-    .input-group label { display: block; font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; }
-    
-    .input-field, select { 
-      width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 10px; 
-      padding: 14px; font-size: 14px; color: #f8fafc; outline: none; font-family: inherit; font-weight: 600; transition: all 0.2s;
+    /* ── DESIGN TOKENS ── */
+    :root {
+      --brand:      #FC8019;
+      --brand-lite: #fff7ed;
+      --bg:         #f3f4f6;
+      --surface:    #ffffff;
+      --text-1:     #111827;
+      --text-2:     #4b5563;
+      --text-3:     #9ca3af;
+      --border:     #e5e7eb;
+      --nav-bg:     #1f2937;
+      --green:      #16a34a;
+      --green-lite: #dcfce7;
+      --red:        #dc2626;
+      --red-lite:   #fee2e2;
+      --amber:      #ea580c;
+      --amber-lite: #fff7ed;
+      --radius-card: 16px;
+      --radius-btn:  10px;
     }
-    .input-field:focus, select:focus { border-color: #38bdf8; box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.1); }
 
-    .btn { width: 100%; background: #38bdf8; color: #0f172a; padding: 16px; border: none; border-radius: 10px; font-size: 15px; font-weight: 900; margin-top: 12px; font-family: inherit; cursor: pointer; transition: 0.2s; }
-    .btn:active { transform: scale(0.98); }
-    .btn:disabled { opacity: 0.7; cursor: not-allowed; }
-    .btn-green { background: #10b981; color: #fff; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text-1);
+      display: flex;
+      flex-direction: column;
+      height: 100dvh;
+      overflow: hidden;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-    #imagePreview, #resImagePreview { width: 100%; height: 160px; border-radius: 10px; background: #0f172a; border: 1px dashed #334155; margin-bottom: 20px; object-fit: cover; display: none; }
+    .tap { cursor: pointer; transition: transform 0.1s ease; }
+    .tap:active { transform: scale(0.96); }
 
-    /* LIVE MENU VIEWER STYLES */
-    .menu-list { display: flex; flex-direction: column; gap: 12px; max-height: 400px; overflow-y: auto; padding-right: 5px; }
-    .menu-list::-webkit-scrollbar { width: 6px; }
-    .menu-list::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
-    
-    .menu-row { display: flex; align-items: center; justify-content: space-between; background: #0f172a; padding: 12px; border-radius: 12px; border: 1px solid #334155; transition: transform 0.2s; }
-    .menu-row:hover { border-color: #475569; transform: translateY(-2px); }
-    .menu-row img { width: 48px; height: 48px; border-radius: 8px; object-fit: cover; border: 1px solid #1e293b; }
-    .menu-row-info { flex: 1; margin-left: 12px; }
-    .menu-row-title { font-size: 14px; font-weight: 800; color: #f8fafc; margin-bottom: 4px; }
-    .menu-row-price { font-size: 12px; color: #94a3b8; font-weight: 600; }
-    .btn-delete { background: rgba(220, 38, 38, 0.1); color: #ef4444; border: 1px solid rgba(220, 38, 38, 0.2); padding: 10px 14px; border-radius: 8px; font-size: 14px; cursor: pointer; transition: 0.2s; }
-    .btn-delete:hover { background: #ef4444; color: #fff; }
+    /* ── TOAST SYSTEM ── */
+    #toast-container {
+      position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+      z-index: 9999; display: flex; flex-direction: column; gap: 8px;
+      align-items: center; pointer-events: none;
+      width: calc(100% - 32px); max-width: 420px;
+    }
+    .toast {
+      padding: 12px 16px; border-radius: 12px; font-size: 13px; font-weight: 700;
+      color: #fff; display: flex; align-items: center; gap: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      animation: toast-in 0.3s ease forwards; width: 100%; pointer-events: all;
+    }
+    .toast.success { background: var(--green); }
+    .toast.error   { background: var(--red); }
+    .toast.info    { background: var(--text-1); }
+    .toast.warning { background: var(--amber); }
+    .toast.out     { animation: toast-out 0.3s ease forwards; }
+    @keyframes toast-in  { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes toast-out { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-12px); } }
 
-    /* Production Toast Notifications */
-    #toast-container { position: fixed; top: 20px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
-    .toast { background: #1e293b; border-left: 4px solid #38bdf8; color: #f8fafc; padding: 16px 20px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 12px; animation: slideIn 0.3s ease forwards; }
-    .toast.success { border-color: #10b981; }
-    .toast.error { border-color: #ef4444; }
-    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-    @keyframes fadeOut { to { opacity: 0; transform: translateY(-10px); } }
+    /* ── SKELETON LOADER ── */
+    .skeleton {
+      background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: 8px;
+      display: inline-block;
+    }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
-    #ceo-overlay { position: fixed; inset: 0; background: #0f172a; z-index: 900; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 32px; }
+    /* Metric skeleton fills the value slot */
+    .metric-skel {
+      width: 70%;
+      height: 28px;
+      border-radius: 6px;
+      margin-top: 2px;
+    }
+
+    /* ── HEADER ── */
+    .app-header {
+      background: var(--surface); padding: 16px 20px;
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid var(--border); flex-shrink: 0; z-index: 50;
+    }
+    .header-left h1 { font-size: 18px; font-weight: 900; color: var(--text-1); letter-spacing: -0.5px; margin-bottom: 4px; }
+
+    .status-badge {
+      font-size: 11px; font-weight: 800; padding: 4px 8px;
+      border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; text-transform: uppercase;
+    }
+    .status-online  { background: var(--green-lite); color: var(--green); }
+    .status-online::before  { content: ''; width: 6px; height: 6px; background: var(--green); border-radius: 50%; display: inline-block; }
+    .status-offline { background: var(--red-lite); color: var(--red); }
+    .status-offline::before { content: ''; width: 6px; height: 6px; background: var(--red); border-radius: 50%; display: inline-block; }
+
+    .master-switch-wrap { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+    .master-label { font-size: 10px; font-weight: 800; color: var(--text-2); text-transform: uppercase; }
+
+    .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; inset: 0; background-color: #d1d5db; transition: .3s; border-radius: 24px; }
+    .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background: #fff; transition: .3s; border-radius: 50%; }
+    input:checked + .slider { background-color: var(--green); }
+    input:checked + .slider:before { transform: translateX(20px); }
+    .switch.disabled { opacity: 0.5; pointer-events: none; }
+
+    /* ── CEO METRICS BAR ── */
+    .metrics-row {
+      display: flex; gap: 10px; padding: 12px 20px;
+      background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0;
+      overflow-x: auto; -webkit-overflow-scrolling: touch;
+    }
+    .metric-card {
+      flex: 1; min-width: 90px; background: #f9fafb;
+      border: 1px solid var(--border); border-radius: 12px; padding: 10px 14px;
+      position: relative;
+    }
+    .metric-title { font-size: 10px; font-weight: 700; color: var(--text-2); text-transform: uppercase; margin-bottom: 3px; letter-spacing: 0.4px; white-space: nowrap; }
+    .metric-val   { font-size: 20px; font-weight: 900; color: var(--text-1); min-height: 28px; }
+    .metric-icon  { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+
+    /* Accent colours per metric */
+    .metric-card.revenue .metric-val  { color: var(--green); }
+    .metric-card.rate    .metric-val  { color: var(--brand); }
+
+    .sync-btn {
+      flex-shrink: 0; background: #f3f4f6; border: 1px solid var(--border);
+      padding: 0 16px; border-radius: 12px; font-size: 12px; font-weight: 800;
+      font-family: inherit; color: var(--text-2); display: flex; align-items: center; gap: 6px;
+    }
+    .sync-btn.spinning i { animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── MAIN CONTENT ── */
+    .main-area { flex: 1; overflow-y: auto; padding-bottom: 84px; position: relative; -webkit-overflow-scrolling: touch; }
+    .view-section { display: none; }
+    .view-section.active { display: block; animation: fadeIn 0.2s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ── ORDERS ── */
+    .order-tabs { display: flex; padding: 14px 20px 0; gap: 8px; background: var(--bg); position: sticky; top: 0; z-index: 10; }
+    .o-tab { flex: 1; text-align: center; padding: 10px 0; font-size: 12px; font-weight: 800; color: var(--text-2); background: #e5e7eb; border-radius: 8px; transition: 0.2s; position: relative; user-select: none; }
+    .o-tab.active { background: var(--text-1); color: #fff; }
+    .o-badge { position: absolute; top: -6px; right: -6px; background: #ef4444; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 10px; border: 2px solid var(--bg); display: none; font-weight: 800; }
+    .o-badge.show { display: inline-block; }
+
+    .orders-container { padding: 14px 20px; }
+    .tab-content { display: none; }
+    .tab-content.active { display: flex; flex-direction: column; gap: 14px; }
+
+    .order-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-card); padding: 16px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.04); border-left: 4px solid var(--brand);
+    }
+    .oc-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; border-bottom: 1px dashed var(--border); padding-bottom: 10px; }
+    .oc-id   { font-size: 15px; font-weight: 900; color: var(--text-1); }
+    .oc-time { font-size: 12px; font-weight: 700; color: var(--text-2); background: #f3f4f6; padding: 4px 8px; border-radius: 6px; }
+    .oc-items { font-size: 13px; font-weight: 600; color: var(--text-2); line-height: 1.7; margin-bottom: 14px; }
+    .oc-footer { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .oc-total-label { font-size: 10px; font-weight: 700; color: var(--text-3); text-transform: uppercase; }
+    .oc-total { font-size: 20px; font-weight: 900; color: var(--text-1); }
+    .oc-actions { display: flex; gap: 10px; }
+
+    .btn-card { flex: 1; padding: 13px; border-radius: var(--radius-btn); font-size: 13px; font-weight: 800; border: none; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .btn-accept { background: #10b981; color: #fff; }
+    .btn-ready  { background: var(--brand); color: #fff; }
+    .btn-card:disabled { opacity: 0.5; pointer-events: none; }
+
+    .otp-box { text-align: center; margin-bottom: 12px; padding: 10px; background: #f9fafb; border-radius: 10px; border: 1px dashed var(--border); }
+    .otp-label { font-size: 10px; font-weight: 800; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.5px; }
+    .otp-value { font-size: 22px; font-weight: 900; color: var(--brand); letter-spacing: 4px; }
+    .waiting-box { text-align: center; padding: 12px; background: var(--amber-lite); color: var(--amber); border-radius: var(--radius-btn); font-weight: 800; font-size: 12px; }
+
+    /* ── MENU ── */
+    .menu-wrap { padding: 20px; }
+    .menu-section-title { font-size: 13px; font-weight: 800; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.6px; margin: 20px 0 10px; padding-bottom: 8px; border-bottom: 2px solid var(--border); }
+    .menu-section-title:first-child { margin-top: 0; }
+    .menu-item { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; transition: opacity 0.2s, filter 0.2s; }
+    .menu-item.out-of-stock { opacity: 0.45; filter: grayscale(0.8); }
+    .mi-name { font-size: 14px; font-weight: 800; color: var(--text-1); margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+    .veg-dot { width: 12px; height: 12px; border-radius: 2px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+    .veg-dot-inner { width: 5px; height: 5px; border-radius: 50%; }
+    .mi-price { font-size: 13px; font-weight: 800; color: var(--text-2); }
+
+    /* ── ERROR / EMPTY STATES ── */
+    .error-state { margin: 24px 20px; padding: 20px; background: var(--red-lite); border: 1px solid #fca5a5; border-radius: var(--radius-card); text-align: center; color: var(--red); }
+    .error-state .err-icon { font-size: 28px; margin-bottom: 10px; }
+    .error-state h3 { font-size: 15px; font-weight: 800; margin-bottom: 6px; }
+    .error-state p  { font-size: 12px; font-weight: 600; opacity: 0.8; }
+    .retry-btn { margin-top: 14px; padding: 10px 20px; background: var(--red); color: #fff; border: none; border-radius: var(--radius-btn); font-size: 13px; font-weight: 800; font-family: inherit; display: inline-block; }
+    .empty-state { text-align: center; padding: 48px 20px; color: var(--text-3); font-weight: 700; font-size: 14px; line-height: 1.8; }
+    .empty-state i { font-size: 32px; margin-bottom: 12px; display: block; }
+
+    /* skeleton order cards */
+    .skel-order-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-card); padding: 16px; margin-bottom: 16px; }
+    .skel-line { height: 14px; margin-bottom: 10px; }
+    .skel-line.wide  { width: 70%; }
+    .skel-line.short { width: 40%; }
+    .skel-btn  { height: 44px; border-radius: var(--radius-btn); margin-top: 12px; }
+
+    /* ── BOTTOM NAV ── */
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--nav-bg); display: flex; justify-content: space-around; padding: 12px 10px 28px; border-top-left-radius: 22px; border-top-right-radius: 22px; z-index: 100; }
+    .b-nav-item { color: #6b7280; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 10px; font-weight: 800; padding: 8px 20px; border-radius: 12px; transition: 0.2s; text-transform: uppercase; letter-spacing: 0.4px; }
+    .b-nav-item i { font-size: 18px; }
+    .b-nav-item.active { color: #fff; }
+    .b-nav-item.active i { color: var(--brand); }
   </style>
 </head>
 <body>
 
   <div id="toast-container"></div>
 
-  <div id="ceo-overlay">
-    <i class="fa-solid fa-shield-halved" style="font-size:56px; color:#38bdf8; margin-bottom:20px;"></i>
-    <h2 style="font-size:24px; font-weight:900; margin-bottom:8px; color:#f8fafc;">Admin Access Required</h2>
-    <p style="color:#94a3b8; font-weight:600; margin-bottom:32px; line-height:1.5;">You do not have CEO privileges to view the Master Catalog.</p>
-    <button id="btn-make-ceo" onclick="executeCEOUpgrade()" class="btn">Grant Me God-Mode (CEO)</button>
-  </div>
-
-  <div class="header">
-    <h1>EatSwada Command</h1>
-    <p>Master Catalog Injection & Control System</p>
-  </div>
-
-  <div class="dashboard-stats">
-    <div class="stat-box">
-      <div class="stat-value stat-blue" id="stat-restaurants">0</div>
-      <div class="stat-label">Total Restaurants</div>
+  <!-- Header -->
+  <div class="app-header">
+    <div class="header-left">
+      <h1 id="res-name-display">EatSwada HQ</h1>
+      <div id="res-status-badge" class="status-badge status-online">Live</div>
     </div>
-    <div class="stat-box">
-      <div class="stat-value stat-green" id="stat-live-items">0</div>
-      <div class="stat-label">Live Items (Selected)</div>
+    <div class="master-switch-wrap">
+      <div class="master-label">Accept Orders</div>
+      <label class="switch tap" id="master-switch-label">
+        <input type="checkbox" id="master-toggle" checked>
+        <span class="slider"></span>
+      </label>
     </div>
   </div>
 
-  <div class="card" style="border-color: #10b981;">
-    <div class="card-title" style="color:#10b981;">
-      <span><i class="fa-solid fa-store"></i> Step 1: Create New Restaurant</span>
-    </div>
-    <div class="input-group">
-      <label>Restaurant Name</label>
-      <input type="text" id="resName" class="input-field" placeholder="e.g. Biryani Zone">
-    </div>
-    <div class="input-group">
-      <label>Cuisine Type</label>
-      <input type="text" id="resCuisine" class="input-field" placeholder="e.g. Biryani, Mughlai">
-    </div>
-    <div class="input-group">
-      <label>High-Res Cover Image URL</label>
-      <input type="url" id="resImage" class="input-field" placeholder="Paste image link here" oninput="previewResImage()">
-    </div>
-    <img id="resImagePreview" src="" alt="Preview">
-    <button class="btn btn-green" id="btnCreateRes" onclick="createNewRestaurant()">Create Restaurant</button>
-  </div>
-
-  <div class="card">
-    <div class="card-title">
-      <span><i class="fa-solid fa-plus"></i> Step 2: Inject Food Item</span>
-    </div>
-    <div class="input-group">
-      <label>1. Assign to Restaurant</label>
-      <div style="display: flex; gap: 10px;">
-        <select id="restaurantSelect" onchange="loadCurrentMenu()" style="flex: 1;">
-          <option value="">Loading restaurants...</option>
-        </select>
-        <button id="btnDeleteRes" onclick="deleteSelectedRestaurant()" style="display: none; background: #ef4444; color: #fff; border: none; border-radius: 10px; padding: 0 16px; font-size: 16px; cursor: pointer; transition: 0.2s;">
-          <i class="fa-solid fa-trash-can"></i>
-        </button>
+  <!-- CEO Metrics Bar — 4 cards with skeleton loaders -->
+  <div class="metrics-row">
+    <div class="metric-card revenue">
+      <div class="metric-title">Total Revenue</div>
+      <div class="metric-val" id="metric-revenue">
+        <span class="skeleton metric-skel"></span>
       </div>
     </div>
-    <div class="input-group">
-      <label>2. Premium Item Name</label>
-      <input type="text" id="itemName" class="input-field" placeholder="e.g. Chicken Roll">
+    <div class="metric-card">
+      <div class="metric-title">Orders Today</div>
+      <div class="metric-val" id="metric-today">
+        <span class="skeleton metric-skel"></span>
+      </div>
     </div>
-    <div class="input-group">
-      <label>3. Default Price (₹)</label>
-      <input type="number" id="itemPrice" class="input-field" placeholder="e.g. 80">
+    <div class="metric-card rate">
+      <div class="metric-title">Success Rate</div>
+      <div class="metric-val" id="metric-rate">
+        <span class="skeleton metric-skel"></span>
+      </div>
     </div>
-    <div class="input-group">
-      <label>4. Dietary Type</label>
-      <select id="itemVeg">
-        <option value="true">Vegetarian (Green)</option>
-        <option value="false">Non-Vegetarian (Red)</option>
-      </select>
-    </div>
-    <div class="input-group">
-      <label>5. High-Res Image URL</label>
-      <input type="url" id="itemImage" class="input-field" placeholder="Paste image link here" oninput="previewImage()">
-    </div>
-    <img id="imagePreview" src="" alt="Preview">
-    <button class="btn" id="uploadBtn" onclick="injectMasterItem()">Inject into Live Menu</button>
+    <button class="sync-btn tap" id="sync-btn" onclick="manualSync()">
+      <i class="fa-solid fa-rotate-right"></i> Sync
+    </button>
   </div>
 
-  <div class="card">
-    <div class="card-title">
-      <span><i class="fa-solid fa-list"></i> Current Live Menu</span>
+  <!-- Main -->
+  <div class="main-area">
+
+    <!-- Orders View -->
+    <div class="view-section active" id="view-orders">
+      <div class="order-tabs">
+        <div class="o-tab active tap" id="otab-new"  onclick="switchOrderTab('new', this)">
+          New <span class="o-badge" id="badge-new">0</span>
+        </div>
+        <div class="o-tab tap" id="otab-prep"  onclick="switchOrderTab('prep', this)">
+          Cooking <span class="o-badge" id="badge-prep">0</span>
+        </div>
+        <div class="o-tab tap" id="otab-ready" onclick="switchOrderTab('ready', this)">
+          Ready <span class="o-badge" id="badge-ready">0</span>
+        </div>
+      </div>
+      <div class="orders-container">
+        <div class="tab-content active" id="tab-new"></div>
+        <div class="tab-content"        id="tab-prep"></div>
+        <div class="tab-content"        id="tab-ready"></div>
+      </div>
     </div>
-    <div id="current-menu-grid">
-       <p style="color:#94a3b8; font-size:13px; font-weight:600; text-align:center; padding: 20px 0;">Select a restaurant above to view and control their menu.</p>
+
+    <!-- Menu View (read-only for CEO — no inline edit) -->
+    <div class="view-section" id="view-menu">
+      <div class="menu-wrap">
+        <div style="font-size:17px;font-weight:900;margin-bottom:4px;">Menu Overview</div>
+        <p style="font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:20px;">Live stock status across all items.</p>
+        <div id="menu-grid">
+          <div class="skel-order-card">
+            <div class="skeleton skel-line wide"></div>
+            <div class="skeleton skel-line short"></div>
+            <div class="skeleton skel-btn"></div>
+          </div>
+          <div class="skel-order-card">
+            <div class="skeleton skel-line wide"></div>
+            <div class="skeleton skel-line short"></div>
+            <div class="skeleton skel-btn"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom Nav -->
+  <div class="bottom-nav">
+    <div class="b-nav-item active tap" id="nav-orders" onclick="switchMainTab('orders', this)">
+      <i class="fa-solid fa-receipt"></i> Orders
+    </div>
+    <div class="b-nav-item tap" id="nav-menu" onclick="switchMainTab('menu', this)">
+      <i class="fa-solid fa-utensils"></i> Menu
     </div>
   </div>
 
   <script>
-    // Production Toast System
-    function showToast(message, type = 'success') {
-      const container = document.getElementById('toast-container');
-      const toast = document.createElement('div');
-      toast.className = `toast ${type}`;
-      
-      const icon = type === 'success' ? '<i class="fa-solid fa-check-circle"></i>' : '<i class="fa-solid fa-circle-exclamation"></i>';
-      toast.innerHTML = `${icon} <span>${message}</span>`;
-      
+    /* ═══════════════════════════════════════════════════════════════
+     *  CONSTANTS
+     * ═══════════════════════════════════════════════════════════════ */
+    var BASE_URL  = 'https://eatswada.onrender.com';
+    var TOKEN_KEY = 'nearbite_token'; // canonical key — never fall back to 'token'
+
+    /* ═══════════════════════════════════════════════════════════════
+     *  AUTH HELPERS
+     * ═══════════════════════════════════════════════════════════════ */
+    function getToken() {
+      return localStorage.getItem(TOKEN_KEY) || null;
+    }
+
+    function redirectToLogin() {
+      localStorage.removeItem(TOKEN_KEY);
+      window.location.href = 'index.html';
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+     *  TOAST SYSTEM
+     * ═══════════════════════════════════════════════════════════════ */
+    function showToast(message, type, duration) {
+      type     = type     || 'info';
+      duration = duration || 3500;
+      var container = document.getElementById('toast-container');
+      if (!container) return;
+      var icons = { success: 'fa-circle-check', error: 'fa-circle-xmark', info: 'fa-circle-info', warning: 'fa-triangle-exclamation' };
+      var toast = document.createElement('div');
+      toast.className = 'toast ' + type;
+      toast.innerHTML = '<i class="fa-solid ' + (icons[type] || icons.info) + '"></i> ' + message;
       container.appendChild(toast);
-      setTimeout(() => {
-        toast.style.animation = 'fadeOut 0.3s ease forwards';
-        setTimeout(() => toast.remove(), 300);
-      }, 3000);
+      setTimeout(function () {
+        toast.classList.add('out');
+        toast.addEventListener('animationend', function () { toast.remove(); }, { once: true });
+      }, duration);
     }
 
-    async function loadRestaurants() {
-      const token = localStorage.getItem('token') || localStorage.getItem('nearbite_token');
-      if (!token) { showToast("Please log into the main app first!", "error"); return; }
+    /* ═══════════════════════════════════════════════════════════════
+     *  SKELETON HELPERS
+     * ═══════════════════════════════════════════════════════════════ */
+    function showMetricSkeleton(id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      el.innerHTML = '<span class="skeleton metric-skel"></span>';
+    }
+
+    function setMetricValue(id, value) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = value;
+    }
+
+    function showOrderSkeletons(count) {
+      count = count || 2;
+      var tabs = ['tab-new', 'tab-prep', 'tab-ready'];
+      for (var t = 0; t < tabs.length; t++) {
+        var el = document.getElementById(tabs[t]);
+        if (!el) continue;
+        var html = '';
+        for (var i = 0; i < count; i++) {
+          html += '<div class="skel-order-card">'
+                + '<div class="skeleton skel-line wide"></div>'
+                + '<div class="skeleton skel-line short"></div>'
+                + '<div class="skeleton skel-btn"></div>'
+                + '</div>';
+        }
+        el.innerHTML = html;
+      }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+     *  NAVIGATION
+     * ═══════════════════════════════════════════════════════════════ */
+    function switchMainTab(tabId, el) {
+      var navItems = document.querySelectorAll('.b-nav-item');
+      for (var i = 0; i < navItems.length; i++) navItems[i].classList.remove('active');
+      el.classList.add('active');
+      var views = document.querySelectorAll('.view-section');
+      for (var j = 0; j < views.length; j++) views[j].classList.remove('active');
+      var target = document.getElementById('view-' + tabId);
+      if (target) target.classList.add('active');
+      fetchPageData();
+    }
+
+    function switchOrderTab(tabId, el) {
+      var tabs = document.querySelectorAll('.o-tab');
+      for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove('active');
+      el.classList.add('active');
+      var contents = document.querySelectorAll('.tab-content');
+      for (var j = 0; j < contents.length; j++) contents[j].classList.remove('active');
+      var target = document.getElementById('tab-' + tabId);
+      if (target) target.classList.add('active');
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+     *  SYNC BUTTON
+     * ═══════════════════════════════════════════════════════════════ */
+    function manualSync() {
+      var btn = document.getElementById('sync-btn');
+      if (btn) btn.classList.add('spinning');
+      fetchPageData().finally(function () {
+        setTimeout(function () { if (btn) btn.classList.remove('spinning'); }, 600);
+      });
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+     *  MASTER FETCH ORCHESTRATOR
+     * ═══════════════════════════════════════════════════════════════ */
+    async function fetchPageData() {
+      var token = getToken();
+      if (!token) { redirectToLogin(); return; }
+
+      var activeView = document.querySelector('.view-section.active');
+      var viewId = activeView ? activeView.id : 'view-orders';
+
+      if (viewId === 'view-orders') await fetchVendorOrders(token);
+      else                          await fetchVendorMenu(token);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+     *  CEO FINANCIAL METRICS PIPELINE  ← NEW
+     *
+     *  Calls GET /api/admin/metrics which runs MongoDB aggregation
+     *  for totalRevenue, ordersToday, and successRate.
+     *  Skeleton loaders are shown during fetch; real numbers replace
+     *  them on success, error message on failure.
+     * ═══════════════════════════════════════════════════════════════ */
+    async function fetchCEOMetrics(token) {
+      // Show skeletons before the fetch starts
+      showMetricSkeleton('metric-revenue');
+      showMetricSkeleton('metric-today');
+      showMetricSkeleton('metric-rate');
 
       try {
-        const response = await fetch('https://eatswada.onrender.com/api/admin/restaurants', {
-          headers: { 'Authorization': `Bearer ${token}` }
+        var res = await fetch(BASE_URL + '/api/admin/metrics', {
+          headers: { Authorization: 'Bearer ' + token },
         });
-        if (response.status === 403) { document.getElementById('ceo-overlay').style.display = 'flex'; return; }
-        const result = await response.json();
 
-        if (result.success) {
-          document.getElementById('ceo-overlay').style.display = 'none';
-          const select = document.getElementById('restaurantSelect');
-          
-          if(result.data.length === 0) {
-             select.innerHTML = '<option value="">⚠️ No Restaurants Created Yet!</option>';
-             document.getElementById('stat-restaurants').innerText = 0;
-          } else {
-             select.innerHTML = '<option value="">-- Select a Restaurant --</option>';
-             result.data.forEach(res => { select.innerHTML += `<option value="${res._id}">${res.name}</option>`; });
-             document.getElementById('stat-restaurants').innerText = result.data.length;
+        if (res.status === 401 || res.status === 403) {
+          redirectToLogin(); return;
+        }
+
+        if (!res.ok) {
+          setMetricValue('metric-revenue', '—');
+          setMetricValue('metric-today',   '—');
+          setMetricValue('metric-rate',    '—');
+          showToast('Could not load financial metrics.', 'error');
+          return;
+        }
+
+        var result = await res.json().catch(function () { return {}; });
+
+        if (!result.success || !result.data || typeof result.data !== 'object') {
+          setMetricValue('metric-revenue', '—');
+          setMetricValue('metric-today',   '—');
+          setMetricValue('metric-rate',    '—');
+          return;
+        }
+
+        var d = result.data;
+
+        // Guard each field — fall back to '—' if not a number
+        var revenue = typeof d.totalRevenue === 'number'
+          ? '₹' + d.totalRevenue.toLocaleString('en-IN')
+          : '—';
+        var today = typeof d.ordersToday === 'number'
+          ? String(d.ordersToday)
+          : '—';
+        var rate = typeof d.successRate === 'number'
+          ? d.successRate + '%'
+          : '—';
+
+        setMetricValue('metric-revenue', revenue);
+        setMetricValue('metric-today',   today);
+        setMetricValue('metric-rate',    rate);
+
+      } catch (_) {
+        setMetricValue('metric-revenue', '—');
+        setMetricValue('metric-today',   '—');
+        setMetricValue('metric-rate',    '—');
+        showToast('Network error loading metrics.', 'error');
+      }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+     *  MASTER RESTAURANT TOGGLE
+     * ═══════════════════════════════════════════════════════════════ */
+    function updateStatusBadge(isOnline) {
+      var badge = document.getElementById('res-status-badge');
+      if (!badge) return;
+      badge.className = 'status-badge ' + (isOnline ? 'status-online' : 'status-offline');
+      badge.textContent = isOnline ? 'Live' : 'Paused';
+    }
+
+    document.getElementById('master-toggle').addEventListener('change', async function () {
+      var isOnline = this.checked;
+      var token    = getToken();
+      if (!token) { redirectToLogin(); return; }
+
+      var switchLabel = document.getElementById('master-switch-label');
+      if (switchLabel) switchLabel.classList.add('disabled');
+
+      try {
+        var res = await fetch(BASE_URL + '/api/vendor/status', {
+          method:  'PUT',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+          body:    JSON.stringify({ isActive: isOnline }),
+        });
+        var result = await res.json().catch(function () { return {}; });
+
+        if (!res.ok || !result.success) {
+          this.checked = !isOnline;
+          showToast(result.message || 'Could not update status.', 'error');
+          return;
+        }
+
+        updateStatusBadge(isOnline);
+        showToast(isOnline ? 'Now accepting orders ✓' : 'Orders paused', isOnline ? 'success' : 'warning');
+      } catch (_) {
+        this.checked = !isOnline;
+        showToast('Connection error. Status not saved.', 'error');
+      } finally {
+        if (switchLabel) switchLabel.classList.remove('disabled');
+      }
+    });
+
+    /* ═══════════════════════════════════════════════════════════════
+     *  ORDERS ENGINE
+     * ═══════════════════════════════════════════════════════════════ */
+    async function fetchVendorOrders(token) {
+      try {
+        var res = await fetch(BASE_URL + '/api/vendor/orders', {
+          headers: { Authorization: 'Bearer ' + token },
+        });
+
+        if (res.status === 401 || res.status === 403) { redirectToLogin(); return; }
+
+        if (!res.ok) {
+          showOrdersError('Server error. Please sync.');
+          return;
+        }
+
+        var result = await res.json();
+
+        if (!result.success || !Array.isArray(result.data)) {
+          showOrdersError('Unexpected server response.');
+          return;
+        }
+
+        renderOrders(result.data);
+      } catch (_) {
+        showOrdersError('Connection error. Check your internet.');
+      }
+    }
+
+    function showOrdersError(message) {
+      var tabs = ['tab-new', 'tab-prep', 'tab-ready'];
+      for (var i = 0; i < tabs.length; i++) {
+        var el = document.getElementById(tabs[i]);
+        if (el) {
+          el.innerHTML =
+            '<div class="error-state">'
+            + '<div class="err-icon"><i class="fa-solid fa-wifi"></i></div>'
+            + '<h3>Connection Error</h3>'
+            + '<p>' + message + '</p>'
+            + '<button class="retry-btn tap" onclick="manualSync()">Retry</button>'
+            + '</div>';
+        }
+      }
+    }
+
+    function generateOTP(orderId) {
+      var raw = String(orderId || '').slice(-5);
+      return parseInt(raw, 16).toString().padStart(6, '0').slice(-4);
+    }
+
+    function renderOrders(orders) {
+      var tabNew   = document.getElementById('tab-new');
+      var tabPrep  = document.getElementById('tab-prep');
+      var tabReady = document.getElementById('tab-ready');
+      if (!tabNew || !tabPrep || !tabReady) return;
+
+      tabNew.innerHTML = tabPrep.innerHTML = tabReady.innerHTML = '';
+      var cNew = 0, cPrep = 0, cReady = 0;
+
+      if (!Array.isArray(orders)) return;
+
+      for (var i = 0; i < orders.length; i++) {
+        var order = orders[i];
+        if (!order || typeof order !== 'object') continue;
+
+        var status = typeof order.status === 'string' ? order.status : '';
+        if (status === 'cancelled' || status === 'delivered') continue;
+
+        var timeStr = order.createdAt
+          ? new Date(order.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+          : '—';
+
+        var itemsHtml = '—';
+        if (Array.isArray(order.items) && order.items.length > 0) {
+          var parts = [];
+          for (var ii = 0; ii < order.items.length; ii++) {
+            var item = order.items[ii];
+            if (!item || typeof item !== 'object') continue;
+            var qty  = Number(item.quantity) || 1;
+            var name = typeof item.name === 'string' ? item.name : 'Item';
+            parts.push('<span style="font-weight:900;color:var(--brand);">' + qty + '×</span> ' + name);
           }
+          if (parts.length > 0) itemsHtml = parts.join('<br>');
         }
-      } catch (err) { showToast("Network Error loading restaurants", "error"); }
-    }
 
-    async function createNewRestaurant() {
-      const name = document.getElementById('resName').value.trim();
-      const cuisine = document.getElementById('resCuisine').value.trim();
-      const image = document.getElementById('resImage').value.trim() || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80';
-      const token = localStorage.getItem('token') || localStorage.getItem('nearbite_token');
-      const btn = document.getElementById('btnCreateRes');
+        var orderNum = order.orderNumber || ('ORD-' + String(order._id || '').slice(-5).toUpperCase());
+        var total    = typeof order.total === 'number' ? '₹' + order.total : (order.total || '—');
+        var orderId  = String(order._id || '');
 
-      if (!name || !cuisine) { showToast("Restaurant Name and Cuisine required!", "error"); return; }
-      btn.innerText = "Creating..."; btn.disabled = true;
+        var baseCard =
+          '<div class="order-card">'
+          + '<div class="oc-header">'
+          +   '<div class="oc-id">' + orderNum + '</div>'
+          +   '<div class="oc-time">' + timeStr + '</div>'
+          + '</div>'
+          + '<div class="oc-items">' + itemsHtml + '</div>'
+          + '<div class="oc-footer">'
+          +   '<div>'
+          +     '<div class="oc-total-label">Bill Total</div>'
+          +     '<div class="oc-total">' + total + '</div>'
+          +   '</div>'
+          + '</div>';
 
-      const generatedSlug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '') + '-' + Date.now();
-      const cuisineArray = [cuisine];
-
-      try {
-        const response = await fetch('https://eatswada.onrender.com/api/restaurants', {
-          method: 'POST', 
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({ name: name, slug: generatedSlug, cuisine: cuisineArray, cuisineDisplay: cuisine, image: image, address: "Maynaguri", rating: 4.5, isActive: true })
-        });
-        const result = await response.json(); 
-        if (response.ok && result.success) {
-           showToast("Restaurant Created Successfully!");
-           document.getElementById('resName').value = ''; document.getElementById('resCuisine').value = '';
-           document.getElementById('resImage').value = ''; document.getElementById('resImagePreview').style.display = 'none';
-           loadRestaurants(); 
-        } else { showToast("Creation failed: " + (result.message || "Unknown error"), "error"); }
-      } catch (err) { showToast("Network error", "error"); }
-      btn.innerText = "Create Restaurant"; btn.disabled = false;
-    }
-
-    async function deleteSelectedRestaurant() {
-      const restaurantId = document.getElementById('restaurantSelect').value;
-      if (!restaurantId) return;
-      if (!confirm("⚠️ DANGER: Are you sure you want to permanently delete this restaurant AND all of its food items? This cannot be undone!")) return;
-
-      const token = localStorage.getItem('token') || localStorage.getItem('nearbite_token');
-      try {
-        const response = await fetch(`https://eatswada.onrender.com/api/restaurants/${restaurantId}`, {
-          method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (response.ok) {
-           showToast("Restaurant Soft-Deleted successfully!");
-           setTimeout(() => window.location.reload(), 1500);
-        } else { showToast("Failed to delete restaurant.", "error"); }
-      } catch (e) { showToast("Network Error", "error"); }
-    }
-
-    async function loadCurrentMenu() {
-      const restaurantId = document.getElementById('restaurantSelect').value;
-      const grid = document.getElementById('current-menu-grid');
-      const delBtn = document.getElementById('btnDeleteRes');
-      const liveCounter = document.getElementById('stat-live-items');
-
-      if (!restaurantId) { 
-          grid.innerHTML = '<p style="color:#94a3b8; font-size:13px; font-weight:600; text-align:center; padding: 20px 0;">Select a restaurant above to view and control their menu.</p>'; 
-          delBtn.style.display = 'none'; 
-          liveCounter.innerText = "0";
-          return; 
+        if (status === 'pending' || status === 'placed') {
+          cNew++;
+          tabNew.innerHTML += baseCard
+            + '<div class="oc-actions">'
+            +   '<button class="btn-card btn-accept tap" onclick="updateOrderStatus(\'' + orderId + '\', \'preparing\', this)">'
+            +     '<i class="fa-solid fa-check"></i> Accept Order'
+            +   '</button>'
+            + '</div></div>';
+        } else if (status === 'preparing') {
+          cPrep++;
+          tabPrep.innerHTML += baseCard
+            + '<div class="otp-box">'
+            +   '<div class="otp-label">Rider Pickup PIN</div>'
+            +   '<div class="otp-value">' + generateOTP(orderId) + '</div>'
+            + '</div>'
+            + '<div class="oc-actions">'
+            +   '<button class="btn-card btn-ready tap" onclick="updateOrderStatus(\'' + orderId + '\', \'out_for_delivery\', this)">'
+            +     '<i class="fa-solid fa-bag-shopping"></i> Food is Ready'
+            +   '</button>'
+            + '</div></div>';
+        } else if (status === 'out_for_delivery') {
+          cReady++;
+          tabReady.innerHTML += baseCard
+            + '<div class="waiting-box"><i class="fa-solid fa-motorcycle"></i> Rider is on the way</div>'
+            + '</div>';
+        }
       }
-      
-      delBtn.style.display = 'block'; 
-      grid.innerHTML = '<p style="color:#38bdf8; font-size:13px; font-weight:800; text-align:center; padding: 20px 0;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching live data...</p>';
-      
+
+      if (cNew   === 0) tabNew.innerHTML   = '<div class="empty-state"><i class="fa-solid fa-inbox"></i>No new orders right now.</div>';
+      if (cPrep  === 0) tabPrep.innerHTML  = '<div class="empty-state"><i class="fa-solid fa-fire-burner"></i>Nothing cooking.</div>';
+      if (cReady === 0) tabReady.innerHTML = '<div class="empty-state"><i class="fa-solid fa-box-open"></i>No orders waiting for pickup.</div>';
+
+      setBadge('badge-new',   cNew);
+      setBadge('badge-prep',  cPrep);
+      setBadge('badge-ready', cReady);
+    }
+
+    function setBadge(id, count) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = count;
+      el.className = count > 0 ? 'o-badge show' : 'o-badge';
+    }
+
+    async function updateOrderStatus(id, status, btn) {
+      var token = getToken();
+      if (!token) { redirectToLogin(); return; }
+
+      if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; }
+
       try {
-        const response = await fetch(`https://eatswada.onrender.com/api/restaurants/${restaurantId}/menu`);
-        const result = await response.json();
-        
-        if (response.ok && result.success) {
-           // Flatten data if backend groups it by category object, otherwise use array
-           let itemsArray = [];
-           if (Array.isArray(result.data)) {
-               itemsArray = result.data;
-           } else if (typeof result.data === 'object' && result.data !== null) {
-               itemsArray = Object.values(result.data).flat();
-           }
+        var res = await fetch(BASE_URL + '/api/orders/' + id + '/status', {
+          method:  'PUT',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+          body:    JSON.stringify({ status: status }),
+        });
 
-           // Update Live Counter Metric
-           liveCounter.innerText = itemsArray.length;
-
-           if (itemsArray.length === 0) { 
-             grid.innerHTML = '<p style="color:#94a3b8; font-size:13px; font-weight:600; text-align:center; padding: 20px 0;">This restaurant currently has 0 items.</p>'; 
-             return; 
-           }
-
-           grid.innerHTML = '<div class="menu-list">' + itemsArray.map(item => `
-             <div class="menu-row">
-               <img src="${item.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c'}" alt="Food">
-               <div class="menu-row-info">
-                 <div class="menu-row-title">${item.name}</div>
-                 <div class="menu-row-price">₹${item.price} • ${item.isAvailable !== false ? '<span style="color:#10b981;"><i class="fa-solid fa-circle" style="font-size:8px;"></i> Live</span>' : '<span style="color:#dc2626;">Hidden</span>'}</div>
-               </div>
-               <button class="btn-delete" onclick="deleteItem('${item._id}')" title="Delete Item"><i class="fa-solid fa-trash-can"></i></button>
-             </div>
-           `).join('') + '</div>';
+        if (!res.ok) {
+          var err = await res.json().catch(function () { return {}; });
+          showToast(err.message || 'Could not update order.', 'error');
+          if (btn) { btn.disabled = false; btn.innerHTML = 'Retry'; }
+          return;
         }
-      } catch (e) { 
-        grid.innerHTML = '<p style="color:#ef4444; font-size:13px; font-weight:800; text-align:center;">Failed to load database.</p>'; 
-        liveCounter.innerText = "Error";
+
+        showToast('Order updated.', 'success');
+        await fetchVendorOrders(token);
+      } catch (_) {
+        showToast('Connection error.', 'error');
+        if (btn) { btn.disabled = false; btn.innerHTML = 'Retry'; }
       }
     }
 
-    async function deleteItem(itemId) {
-      if(!confirm("⚠️ WARNING: Are you sure you want to permanently delete this item?")) return;
-      const token = localStorage.getItem('token') || localStorage.getItem('nearbite_token');
-      try {
-         const response = await fetch(`https://eatswada.onrender.com/api/admin/menu/${itemId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
-         if(response.ok) { 
-           showToast("Item permanently deleted."); 
-           loadCurrentMenu(); 
-         }
-      } catch(e) { showToast("Network Error", "error"); }
-    }
+    /* ═══════════════════════════════════════════════════════════════
+     *  MENU ENGINE (read-only view for CEO)
+     * ═══════════════════════════════════════════════════════════════ */
+    async function fetchVendorMenu(token) {
+      var grid = document.getElementById('menu-grid');
+      if (!grid) return;
 
-    function previewResImage() {
-      const url = document.getElementById('resImage').value;
-      const img = document.getElementById('resImagePreview');
-      if (url.length > 10) { img.src = url; img.style.display = 'block'; } else { img.style.display = 'none'; }
-    }
-
-    function previewImage() {
-      const url = document.getElementById('itemImage').value;
-      const img = document.getElementById('imagePreview');
-      if (url.length > 10) { img.src = url; img.style.display = 'block'; } else { img.style.display = 'none'; }
-    }
-
-    async function injectMasterItem() {
-      const restaurantId = document.getElementById('restaurantSelect').value;
-      const name = document.getElementById('itemName').value;
-      const price = document.getElementById('itemPrice').value;
-      const isVeg = document.getElementById('itemVeg').value === 'true';
-      const image = document.getElementById('itemImage').value || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c';
-
-      if (!restaurantId || !name || !price) { showToast("Fill out Restaurant, Name, and Price!", "error"); return; }
-
-      const token = localStorage.getItem('token') || localStorage.getItem('nearbite_token');
-      const btn = document.getElementById('uploadBtn');
-      btn.innerText = "Injecting..."; btn.disabled = true;
+      grid.innerHTML =
+        '<div class="skel-order-card"><div class="skeleton skel-line wide"></div><div class="skeleton skel-line short"></div><div class="skeleton skel-btn"></div></div>'
+        + '<div class="skel-order-card"><div class="skeleton skel-line wide"></div><div class="skeleton skel-line short"></div><div class="skeleton skel-btn"></div></div>';
 
       try {
-        // PRODUCTION FIX: Added isAvailable: true and restaurant field so it maps to DB and shows on frontend
-        const response = await fetch('https://eatswada.onrender.com/api/admin/menu', {
-          method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({ 
-            restaurantId: restaurantId, 
-            restaurant: restaurantId,
-            name: name, 
-            price: price, 
-            isVeg: isVeg, 
-            image: image, 
-            category: 'General', 
-            inStock: true,
-            isAvailable: true // <-- Fixes the "doesn't show on main website" glitch
-          })
+        var res = await fetch(BASE_URL + '/api/vendor/menu', {
+          headers: { Authorization: 'Bearer ' + token },
         });
-        const result = await response.json();
-        if (response.ok && result.success) {
-           showToast("Master Item Injected successfully!");
-           document.getElementById('itemName').value = ''; document.getElementById('itemPrice').value = '';
-           document.getElementById('itemImage').value = ''; document.getElementById('imagePreview').style.display = 'none';
-           loadCurrentMenu();
-        } else { showToast("Upload failed: " + (result.message || "Access Denied"), "error"); }
-      } catch (err) { showToast("Network error.", "error"); }
-      
-      btn.innerText = "Inject into Live Menu"; btn.disabled = false;
+
+        if (res.status === 401 || res.status === 403) { redirectToLogin(); return; }
+
+        if (!res.ok) {
+          grid.innerHTML = '<div class="error-state"><div class="err-icon"><i class="fa-solid fa-wifi"></i></div><h3>Could Not Load Menu</h3><p>Please sync.</p><button class="retry-btn tap" onclick="manualSync()">Retry</button></div>';
+          return;
+        }
+
+        var result = await res.json();
+
+        if (!result.success || typeof result.data !== 'object' || result.data === null) {
+          grid.innerHTML = '<div class="empty-state"><i class="fa-solid fa-utensils"></i>No menu items.</div>';
+          return;
+        }
+
+        renderMenuReadOnly(result.data);
+      } catch (_) {
+        grid.innerHTML = '<div class="error-state"><div class="err-icon"><i class="fa-solid fa-wifi"></i></div><h3>Connection Error</h3><p>Check your internet.</p><button class="retry-btn tap" onclick="manualSync()">Retry</button></div>';
+      }
     }
 
-    async function executeCEOUpgrade() {
-        const token = localStorage.getItem('token') || localStorage.getItem('nearbite_token');
-        const btn = document.getElementById('btn-make-ceo');
-        btn.innerText = "Upgrading..."; btn.disabled = true;
+    function renderMenuReadOnly(grouped) {
+      var grid = document.getElementById('menu-grid');
+      if (!grid) return;
 
-        try {
-            const res = await fetch('https://eatswada.onrender.com/api/make-me-ceo', { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
-            const data = await res.json();
-            if (data.success) { 
-              showToast("Success! You are now the CEO."); 
-              document.getElementById('ceo-overlay').style.display = 'none'; 
-              loadRestaurants(); 
-            } 
-            else { showToast("Upgrade failed.", "error"); btn.innerText = "Grant Me God-Mode (CEO)"; btn.disabled = false; }
-        } catch(e) { showToast("Network Error", "error"); btn.innerText = "Grant Me God-Mode (CEO)"; btn.disabled = false; }
+      if (typeof grouped !== 'object' || grouped === null) {
+        grid.innerHTML = '<div class="empty-state"><i class="fa-solid fa-utensils"></i>No items yet.</div>';
+        return;
+      }
+
+      var categories = Object.keys(grouped);
+      if (categories.length === 0) {
+        grid.innerHTML = '<div class="empty-state"><i class="fa-solid fa-utensils"></i>No menu items.</div>';
+        return;
+      }
+
+      var html = '';
+
+      for (var ci = 0; ci < categories.length; ci++) {
+        var cat   = categories[ci];
+        var items = grouped[cat];
+        if (!Array.isArray(items) || items.length === 0) continue;
+
+        html += '<div class="menu-section-title">' + cat + '</div>';
+
+        for (var ii = 0; ii < items.length; ii++) {
+          var item = items[ii];
+          if (!item || typeof item !== 'object') continue;
+
+          var isVeg    = Boolean(item.isVeg);
+          var inStock  = item.inStock !== false;
+          var vegColor = isVeg ? '#16a34a' : '#dc2626';
+          var price    = typeof item.price === 'number' ? item.price : (Number(item.price) || 0);
+          var name     = typeof item.name  === 'string' ? item.name  : 'Unnamed Item';
+
+          html +=
+            '<div class="menu-item ' + (inStock ? '' : 'out-of-stock') + '">'
+            + '<div>'
+            +   '<div class="mi-name">'
+            +     '<div class="veg-dot" style="border:1.5px solid ' + vegColor + ';">'
+            +       '<div class="veg-dot-inner" style="background:' + vegColor + ';"></div>'
+            +     '</div>'
+            +     name
+            +   '</div>'
+            +   '<div class="mi-price">₹' + price + '</div>'
+            + '</div>'
+            + '<span style="font-size:11px;font-weight:800;padding:4px 10px;border-radius:6px;'
+            +   (inStock
+                 ? 'background:var(--green-lite);color:var(--green);'
+                 : 'background:var(--red-lite);color:var(--red);')
+            + '">' + (inStock ? 'In Stock' : 'Out of Stock') + '</span>'
+            + '</div>';
+        }
+      }
+
+      grid.innerHTML = html;
     }
 
-    document.addEventListener('DOMContentLoaded', loadRestaurants);
+    /* ═══════════════════════════════════════════════════════════════
+     *  BOOT
+     * ═══════════════════════════════════════════════════════════════ */
+    document.addEventListener('DOMContentLoaded', async function () {
+      var token = getToken();
+      if (!token) { redirectToLogin(); return; }
+
+      // Show order skeletons immediately
+      showOrderSkeletons(2);
+
+      // Metrics and orders load in parallel — fastest possible paint
+      fetchCEOMetrics(token);
+      fetchVendorOrders(token);
+
+      // Auto-refresh every 15 s
+      setInterval(function () { fetchPageData(); }, 15000);
+      setInterval(function () { fetchCEOMetrics(getToken()); }, 60000); // metrics every 60 s
+    });
   </script>
 </body>
 </html>
